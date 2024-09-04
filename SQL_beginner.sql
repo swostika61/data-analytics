@@ -162,3 +162,90 @@ SELECT *
 FROM CTE_EXAMPLE 
 JOIN CTE_EXAMPLE2 
 ON CTE_EXAMPLE.employee_id=CTE_EXAMPLE2.employee_id;
+
+-- *******************TEMPORARY TABLES:
+-- ************* only visible to current session that they are created in.
+# 1st way
+CREATE TEMPORARY TABLE temp_table(
+	first_name VARCHAR(50),
+	last_name VARCHAR(50),
+	favourite_movie VARCHAR(100));
+    
+INSERT INTO temp_table 
+	VALUES('Swostika','Lamichhane','Game of thrones');
+    
+SELECT * FROM temp_table;
+
+-- 2nd way
+SELECT * FROM employee_salary;
+
+CREATE TEMPORARY TABLE salary_over_50k
+	(SELECT * FROM employee_salary
+    WHERE salary>50000);
+    
+SELECT * FROM employee_salary;
+
+
+-- ***************************STORED PROCEDURE
+CREATE PROCEDURE large_salaries()
+	SELECT *
+    FROM employee_salary
+    WHERE salary>=50000;
+    
+DELIMITER $$
+CREATE PROCEDURE large_salaries2()
+BEGIN 
+	SELECT *
+    FROM employee_salary
+    WHERE salary>=50000;
+    SELECT *
+    FROM employee_salary
+    WHERE salary>=10000;
+END $$
+DELIMITER ;
+# call parks_and_recreation.large_salaries2();
+
+-- ***************** use of parameter in store procedure
+# way to drop procedure :>> DROP PROCEDURE `large_salaries3`;
+DELIMITER $$
+CREATE PROCEDURE large_salaries3(p_employee_id INT)
+BEGIN 
+	SELECT salary
+    FROM employee_salary
+    WHERE employee_id=p_employee_id;
+END $$
+DELIMITER ;   
+
+CALL large_salaries3(1);
+
+-- TRIGGERS AND EVENTS
+-- ************* executes automatically when the event takes place on specific table
+DELIMITER $$
+CREATE TRIGGER employee_insert
+	AFTER INSERT ON employee_salary
+    FOR EACH ROW
+BEGIN 
+	INSERT INTO employee_demographics (employee_id, first_name, last_name) 
+    VALUES (NEW.employee_id, NEW.first_name, NEW.last_name ); 
+END $$
+DELIMITER ;
+ 
+INSERT INTO employee_salary (employee_id,first_name,last_name,occupation,salary,dept_id)
+	VALUES (13,'Swostika','Lamichhane','Software Developer',1000000,NULL);
+    
+-- *** EVENTS: occurs when scheduled
+    
+DELIMITER $$
+CREATE EVENT delete_retires
+	ON SCHEDULE EVERY 30 SECOND
+DO 
+BEGIN
+	DELETE 
+    FROM employee_demographics
+    WHERE age>=60;
+END $$
+DELIMITER ;
+
+# to check when event doesnot work (check if event_scheduler is on or off)
+SHOW VARIABLES LIKE 'event%';
+ 
