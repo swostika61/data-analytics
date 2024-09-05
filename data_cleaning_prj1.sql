@@ -113,3 +113,43 @@ ALTER TABLE layoffs_staging2
 MODIFY COLUMN `date` DATE;
 
 
+-- 3. NULL VALUES OR BLANK VALUES >> try to populate blank data
+
+SELECT *
+FROM layoffs_staging2
+WHERE industry IS NULL 
+OR industry='';
+
+SELECT *
+FROM layoffs_staging2
+WHERE company='Bally\'s Interactive' ;
+
+SELECT *
+FROM layoffs_staging2 AS t1
+JOIN layoffs_staging2 AS t2
+ON t1.company=t2.company
+WHERE (t1.industry IS NULL OR t1.industry='')
+AND (t2.industry IS NOT NULL AND t2.industry!='');
+
+UPDATE layoffs_staging2 t1
+JOIN layoffs_staging2 t2
+	ON t1.company=t2.company
+SET t1.industry=t2.industry
+WHERE (t1.industry IS NULL OR t1.industry='')
+AND (t2.industry IS NOT NULL AND t2.industry!='');
+
+SELECT *
+FROM layoffs_staging2
+WHERE total_laid_off IS NULL 
+AND percentage_laid_off is NULL; 
+
+-- *************4. DELETE ROWS or column which are not needed
+DELETE
+FROM layoffs_staging2
+WHERE total_laid_off IS NULL 
+AND percentage_laid_off is NULL;  
+
+SELECT * FROM layoffs_staging2;
+
+ALTER TABLE layoffs_staging2
+DROP COLUMN row_num;
